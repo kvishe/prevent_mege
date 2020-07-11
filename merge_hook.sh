@@ -25,6 +25,7 @@ fi
 FROM_BRANCH=$(head -n 1 $1 | sed -e "s/^\s*Merge .*\?branch '\(.*\?\)'.*$/\1/")
 
 if [[ $FROM_BRANCH = $FORBIDDEN_BRANCH ]]; then
+       echo 
        echo " You are trying to merge ${FROM_BRANCH} into the current branch."
        echo " Surely you don't mean that?"
        echo 
