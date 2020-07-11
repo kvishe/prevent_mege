@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+
+# This git hook will prevent merging specific branches into master
+# Put this file in your local repo, in the .git/hooks folder
+# and make sure it is executable.
+# The name of the file *must* be "prepare-commit-msg" for Git to pick it up.
+
+FORBIDDEN_BRANCHES = ["stg"]
+
+def merge?
+  ARGV[1] == "merge"
+end
+
+def merge_msg
+  @msg ||= `cat .git/MERGE_MSG`
+end
+
+def from_branch
+  @from_branch = merge_msg.match(/Merge branch '(.*?)'/)[1]
+end
+
+def from_forbidden_branch?
+  FORBIDDEN_BRANCHES.include?(from_branch)
+end
+
+if merge? && from_forbidden_branch?
+  out = `git reset --merge`
+  puts
+  puts " STOP THE PRESSES!"
+  puts " You are trying to merge #{from_branch} into the current branch."
+  puts " Surely you don't mean that?"
+  puts
+  puts " run the following command now to discard your working tree changes:"
+  puts
+  puts " git reset --merge"
+  puts
+  exit 1
+end
