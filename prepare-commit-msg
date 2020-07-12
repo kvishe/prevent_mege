@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # -------------------------------------------------------------#
 # Avoid merge from staging branch to any other branches        #
 # -------------------------------------------------------------#
@@ -16,22 +16,30 @@
 FORBIDDEN_BRANCH="stg"
 
 # Check for merges
-if [[ $2 != 'merge' ]]; then
+if [[ ! -e .git/MERGE_MSG ]]; then
     # Not a merge
     exit 0
 fi
 
+# Current branch
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
 # Merging from
-FROM_BRANCH=$(head -n 1 $1 | sed -e "s/^\s*Merge .*\?branch '\(.*\?\)'.*$/\1/")
+FROM_BRANCH=$(head -n 1 .git/MERGE_MSG | sed -e "s/^\s*Merge .*\?branch '\(.*\?\)'.*$/\1/")
+
+if [[ $FROM_BRANCH = $CURRENT_BRANCH ]]; then
+    # Pulling to same branch
+    exit 0
+fi
 
 if [[ $FROM_BRANCH = $FORBIDDEN_BRANCH ]]; then
-       echo 
-       echo " You are trying to merge ${FROM_BRANCH} into the current branch."
-       echo " Surely you don't mean that?"
-       echo 
-       echo " run the following command now to discard your working tree changes:"
-       echo 
-       echo " git reset --merge"
-       echo 
-       exit 1
+    echo
+    echo " You are trying to merge ${FROM_BRANCH} into the current branch."
+    echo " Surely you don't mean that?"
+    echo 
+    echo " run the following command now to discard your working tree changes:"
+    echo 
+    echo " git reset --merge"
+    echo 
+    exit 1
 fi
